@@ -50,22 +50,8 @@ LlamaIndex-Academic-RAG/
 
 ## 🏗️ 技术架构
 
-```mermaid
-flowchart TD
-    UI["Web UI<br/>(支持流式)"] --> API["FastAPI API<br/>Server 编排"]
-    
-    API --> Parse["LlamaParse<br/>(高精解析)"]
-    API --> QR["Query Rewriter<br/>(查询智能改写)"]
-    
-    Parse --> Chunk["Parent-Child 切分"]
-    Chunk --> FAISS["FAISS + 本地 JSON"]
-    
-    QR --> HS["Hybrid Search<br/>(BM25+向量+路由)"]
-    
-    DS["DashScope<br/>LLM & Embed"] <--> HS
-    FAISS <--> HS
-    
-    HS --> Mem["Memory System<br/>(长期/短期上下文)"]
+<img width="768" height="650" alt="image" src="https://github.com/user-attachments/assets/882f719a-2e0a-4028-aa8e-ef2348b3f30f" />
+
 
 ## 📋 系统处理流程
 文献上传与高精解析：用户上传 PDF 后，LlamaParse 将其精准转为 Markdown，正则系统提取完整的 H1 > H2 > H3 层级树。
