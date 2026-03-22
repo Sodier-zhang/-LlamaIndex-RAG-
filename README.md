@@ -50,28 +50,36 @@ LlamaIndex-Academic-RAG/
 
 ## 🏗️ 技术架构
 
-┌─────────────┐      ┌────────────────┐      ┌─────────────┐
-│   Web UI    │─────▶│  FastAPI API   │─────▶│ LlamaParse  │
-│  (支持流式)  │      │  Server 编排   │      │  (高精解析)  │
-└─────────────┘      └───────┬────────┘      └──────┬──────┘
-                             │                      │
-                             │                      │
-                     ┌───────▼────────┐      ┌──────▼──────┐
-                     │ Query Rewriter │      │   Parent-   │
-                     │  (查询智能改写) │      │  Child 切分 │
-                     └───────┬────────┘      └──────┬──────┘
-                             │                      │
-                             │                      │
-┌──────────────┐     ┌───────▼────────┐      ┌──────▼──────┐
-│  DashScope   │◀────┤ Hybrid Search  │◀────▶│   FAISS +   │
-│ LLM & Embed  ├────▶│(BM25+向量+路由) │      │  本地 JSON  │
-└──────────────┘     └───────┬────────┘      └─────────────┘
-                             │
-                             │
-                     ┌───────▼────────┐
-                     │ Memory System  │
-                     │(长期/短期上下文) │
-                     └────────────────┘
+```mermaid
+flowchart TD
+    UI["Web UI<br/>(支持流式)"] --> API["FastAPI API<br/>Server 编排"]
+    
+    subgraph Ingest ["1. 文档处理"]
+        Parse["LlamaParse<br/>(高精解析)"] --> Chunk["Parent-Child 切分"]
+        Chunk --> Embed["DashScope Embedding"]
+        Embed --> Store["FAISS + 本地存储"]
+    end
+    
+    API --> Parse
+    
+    subgraph Retrieve ["2. 混合检索"]
+        QR["Query Rewriter<br/>(查询智能改写)"] --> Route["Routing Engine<br/>(标题层级路由)"]
+        Route --> Hybrid["Hybrid Search<br/>(BM25 + 向量)"]
+        Hybrid --> Rerank["DashScope Rerank<br/>(重排序)"]
+        Rerank --> Merge["Auto-Merge<br/>(父子节点合并)"]
+    end
+    
+    API --> QR
+    Store -.-> Hybrid
+    
+    subgraph Memory ["3. 记忆系统"]
+        LTM["长期向量记忆"] <--> STM["短期滑窗记忆"]
+    end
+    
+    Merge --> LLM["LLM Generation<br/>(Qwen-Turbo)"]
+    STM --> LLM
+    LLM --> Ans["Final Answer<br/>(学术回答 + 溯源)"]
+```
 
 
 ## 📋 系统处理流程
