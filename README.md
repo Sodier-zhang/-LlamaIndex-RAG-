@@ -49,25 +49,23 @@ LlamaIndex-Academic-RAG/
 上下文自愈 (Auto Merge)： 如果检索到大量细碎的子节点（Child Node）均指向同一个父节点（Parent Node），系统会自动将结果替换合并为完整的父节点内容，交由大模型生成答案。
 
 ## 🏗️ 技术架构
-┌─────────────┐     ┌────────────────┐     ┌─────────────┐
-│   Web UI    │────▶│  FastAPI API   │────▶│ LlamaParse  │
-│  (支持流式)  │     │  Server 编排   │     │  (高精解析)  │
-└─────────────┘     └───────┬────────┘     └──────┬──────┘
-                            │                     │
-                    ┌───────▼────────┐      ┌─────▼──────┐
-                    │ Query Rewriter │      │ Parent-    │
-                    │   (查询智能改写) │      │ Child 切分 │
-                    └───────┬────────┘      └─────┬──────┘
-                            │                     │
-┌─────────────┐     ┌───────▼────────┐      ┌─────▼──────┐
-│ DashScope   │◀────│ Hybrid Search  │◀────▶│ FAISS +    │
-│ LLM &amp; Embed │────▶│ (BM25+向量+路由)│      │ 本地 JSON  │
-└─────────────┘     └────────────────┘      └────────────┘
-                            │
-                    ┌───────▼────────┐
-                    │ Memory System  │
-                    │(长期/短期上下文) │
-                    └────────────────┘
+
+```mermaid
+flowchart TD
+    UI["Web UI<br/>(支持流式)"] --> API["FastAPI API<br/>Server 编排"]
+    
+    API --> Parse["LlamaParse<br/>(高精解析)"]
+    API --> QR["Query Rewriter<br/>(查询智能改写)"]
+    
+    Parse --> Chunk["Parent-Child 切分"]
+    Chunk --> FAISS["FAISS + 本地 JSON"]
+    
+    QR --> HS["Hybrid Search<br/>(BM25+向量+路由)"]
+    
+    DS["DashScope<br/>LLM & Embed"] <--> HS
+    FAISS <--> HS
+    
+    HS --> Mem["Memory System<br/>(长期/短期上下文)"]
 
 ## 📋 系统处理流程
 文献上传与高精解析：用户上传 PDF 后，LlamaParse 将其精准转为 Markdown，正则系统提取完整的 H1 > H2 > H3 层级树。
