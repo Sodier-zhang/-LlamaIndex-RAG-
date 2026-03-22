@@ -35,8 +35,9 @@ LlamaIndex-Academic-RAG/
 ├── uploads/                  # 用户上传的原始文献存储
 ├── output/                   # 文档解析生成的中间结果（JSON/MD）
 └── memory_storage/           # 长期对话记忆的 FAISS 向量落盘目录
+```
 
-##🧩 核心检索机制 (Hybrid Retrieval)
+## 🧩 核心检索机制 (Hybrid Retrieval)
 为了应对学术文献的长文本和复杂逻辑，本项目未采用简单的单路向量检索，而是实现了一套精密的管道：
 
 路由检索 (Routing)： 首先在所有提取到的“一级/二级标题”节点中进行检索，定位高度相关的论文章节。
